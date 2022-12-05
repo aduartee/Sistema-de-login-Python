@@ -1,9 +1,7 @@
-import hashlib
-
 from model import Pessoa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-from hashlib import sha256
+import hashlib
 
 def Conec():
     USUARIO = "root"
@@ -12,8 +10,8 @@ def Conec():
     BANCO = "login"
     PORT = "3306"
 
-    CON = f"mysql+pymysql://{USUARIO}:{PASSWORD}@{HOST}:{PORT}/{BANCO}"
-    engine = create_engine(CON, echo=False)
+    CON = f'mysql+pymysql://{USUARIO}:{PASSWORD}@{HOST}:{PORT}/{BANCO}'
+    engine = create_engine(CON, echo=True)
     Session = sessionmaker(bind=engine)
     return Session()
 
@@ -21,7 +19,7 @@ def Conec():
 class Cadastro():
     @classmethod
     def verifica_dados(cls, nome, email, senha):
-        if len(nome) > 40 or len(nome) < 3 :
+        if len(nome) > 40 or len(nome) < 3:
             return 2
 
         if len(email) > 200:
@@ -34,10 +32,10 @@ class Cadastro():
 
     @classmethod
     def cadastrar(cls, nome, email, senha):
-        session = Conec()
-        usuario = session.query(Pessoa).fiter(Pessoa.email == email).all()
+        Session = Conec()
+        usuario = Session.query(Pessoa).filter(Pessoa.email == email).all()
 
-        if len(usuario) > 0
+        if len(usuario) > 0:
             return 5
 
         dados_verificados = cls.verifica_dados(nome, email, senha)
@@ -46,15 +44,32 @@ class Cadastro():
             return dados_verificados()
 
         try:
-            senha = hashlib.sha256()
+            senha = hashlib.sha256(senha.encode()).hexdigest()
+            p1 = Pessoa(
+                nome=nome,
+                email=email,
+                senha=senha
+            )
+            session.add(p1)
+            session.commit(p1)
+            return 1
 
         except:
-            pass
+            return 3
 
 
+class Controller_login:
+    @classmethod
+    def Login(cls, email, senha):
+        session = Conec()
+        senha = hashlib.sha256(senha.encode()).hexdigest()
+        logado = session.query(Pessoa).filter(Pessoa.email == email).filter(Pessoa.senha == senha).all()
 
+        if len(logado) == 1:
+            return {'logado': True, 'id': logado[0].id}
 
+        else:
+            return False
 
-
-
+print(Cadastro.cadastrar('Arthur', 'email', 'senha'))
 

@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, text, ForeignKey
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from hashlib import sha256
 
 # Fornece os dados para realizar a conexão com o banco de dados
 USUARIO = "root"
